@@ -15,12 +15,9 @@ def get_map():
     map.connect(None, '/create/docs/{amount:\d+}', controller="controllers", action="create_items")
     map.connect(None, '/drop/collection', controller="controllers", action="drop_collection")
     map.connect(None, '/get/random', controller="controllers", action="get_random")
-    #map.connect(None, '/api/user/choice/{choice}', controller="controllers", action="handle_user_choice")
-    #map.connect(None, '/chat/{channel_id:\d+}', controller="controllers", action="openchat")
-    #map.connect(None, '/socket.io/channel{channel_id:\d+}', controller="controllers", action="handle_connect")
-    # Connect static path to static content controller
-    # You may specify here a static url or something like that
-
+    map.connect(None, '/get/count', controller="controllers", action="get_count")
+    map.connect(None, '/insert/marker/{uid:\d+}', controller="controllers", action="insert_marker")
+    map.connect(None, '/get/marker/{uid:\d+}', controller="controllers", action="get_marker")
     if DEBUG:
         map.connect(None, '/static/{path_info:.*}', controller="static", action="index") #Handling static files
 

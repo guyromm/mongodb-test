@@ -4,7 +4,9 @@
 from noodles.http import Response, ajax_response
 from noodles.templates import render_to
 from pymongo import Connection
-import pymongo, time, random, string
+import pymongo, time, random, string, gevent
+
+GREENLETS = 4
 
 def get_collection():
     connection = Connection()
@@ -43,8 +45,14 @@ def create_items(request, amount):
             }
         return test_item
     start = time.time()
-    for i in range(int(amount)):
-        test_collection.insert(get_test_item())
+    amount_per_greenlet = int(int(amount) / GREENLETS)
+    
+    def insert_to_mongo():
+        for i in range(amount_per_greenlet):
+            test_collection.insert(get_test_item())
+    
+    jobs = [gevent.spawn(insert_to_mongo) for g in range(GREENLETS)]
+    gevent.joinall(jobs)
     delta = time.time() - start
     return {'success': True, 'time': delta, 'count': test_collection.count()}
     
@@ -54,7 +62,7 @@ def get_count(request):
     start = time.time()
     test_collection = get_collection()
     delta = time.time() - start
-    return {'time': delta, 'count': test_collection.count()}
+    return {'time': delta, 'count': test_collection.count(), 'success': True}
     
 @ajax_response
 def get_random(request):
@@ -64,7 +72,7 @@ def get_random(request):
     randomNum = random.randint(0, test_collection.count())
     item = test_collection.find().limit(-1).skip(randomNum).next()
     delta = time.time() - start
-    return {'item': item, 'time': delta}
+    return {'item': item, 'time': delta, 'success': True}
     
 @ajax_response
 def insert_marker(request, uid):
