@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+    <head>
+        <title>Mongo DB Web Test benchmark </title>
+        <script type="text/javascript" src="/static/jquery.js"></script>
+        <script type="text/javascript" src="/static/testbench.js"></script>
+    </head>
+    
+    <body>
+        <h1>Hello Mongo DB Testbench!</h1>
+        
+        <button id="start_test_button" >Start test</button>
+        <div id="error_log" style="background-color: #d65b5b">
+        </div>
+        <div id="testlog"></div>
+        
+        <script type="text/javascript">
+        // Setup ajax
+        $.ajaxSetup({type: "POST",
+                    dataType: 'json',
+                    async: false,
+                    cache: false,
+                    timeout: 30000,
+                    error: function(e){
+                            alert(e.responseText);
+                        }
+                    })
+        
+        
+        // Main test sequence is here
+        
+        $(function(){
+            $('#start_test_button').click(function(){
+                startTest()
+            })
+        });
+        </script>
+        
+    </body>
+</html>

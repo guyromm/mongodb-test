@@ -11,7 +11,10 @@ def get_map():
     map = Mapper()
     # Add routes here
     map.connect("index", '/', controller="controllers", action="index")
-    #map.connect(None, '/api/start/game', controller="controllers", action="startgame")
+    map.connect(None, '/check/mongo/connect', controller="controllers", action="checkMongo")
+    map.connect(None, '/create/docs/{amount:\d+}', controller="controllers", action="create_items")
+    map.connect(None, '/drop/collection', controller="controllers", action="drop_collection")
+    map.connect(None, '/get/random', controller="controllers", action="get_random")
     #map.connect(None, '/api/user/choice/{choice}', controller="controllers", action="handle_user_choice")
     #map.connect(None, '/chat/{channel_id:\d+}', controller="controllers", action="openchat")
     #map.connect(None, '/socket.io/channel{channel_id:\d+}', controller="controllers", action="handle_connect")

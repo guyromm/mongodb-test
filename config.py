@@ -14,7 +14,7 @@ APP_DIR = os.getcwd()
 URL_RESOLVER = 'urls'
 
 # List of controllers module
-CONTROLLERS = ['controllers', ]
+CONTROLLERS = ['controllers', 'static']
 
 # Specify redis host there
 REDIS_HOST = 'localhost'
