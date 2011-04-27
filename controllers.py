@@ -5,13 +5,14 @@ from noodles.http import Response, ajax_response
 from noodles.templates import render_to
 from pymongo import Connection
 import pymongo, time, random, string, gevent
-
-GREENLETS = 4
+from pymongo import ASCENDING, DESCENDING
 
 def get_collection():
     connection = Connection()
     db = connection.test_database
-    return db.test_collection
+    collection = db.test_collection
+    collection.create_index('indexed_id')
+    return collection
     
 def random_str(N):
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(N))
@@ -35,24 +36,39 @@ def create_items(request, amount):
     "Create an amount of test items and insert it to test collection"
     test_collection = get_collection()
     def get_test_item():
-        test_item = {
-                'no': random_str(4),
-                'such': random_str(8),
-                'thing': random_str(16),
-                'as': random_str(32),
-                'free': random_str(64),
-                'lunch': random_str(128),
+        #return {
+        #        'no': random_str(4),
+        #        'such': random_str(8),
+        #        'thing': random_str(16),
+        #        'as': random_str(32),
+        #        'free': random_str(64),
+        #        'lunch': random_str(128),
+        #    }
+    
+        return {
+                'no': 'dftg',
+                'such': 'fkidjifx',
+                'thing': 'hfsdjfhdjkshsdfkldjsgergdsf',
+                'as': 'dsgkljadgndsfhgodfgbdhdfhkghhhhhhtrjioesrgjeronigergioer',
+                'free': 'sdgjkdsgn jdsgneropgnmeropgunnodsjsdkgjndsgkdl;krkgnl;sdgkdsfgjjfpirsgkdjsiorogybriougnerpognepr',
+                'lunch': 'wgjnsjklsdnflguboerugnjdfklgjsdjkgbdsfkln nasdlfjmasopfeopfuniofu84yt784y30fu 4fnfue9fnu32urfn849yrbydfwe87yrf8y832ry834yr348ty8ty348ty3484y38t349t8y3498yrbyb89ewyrf9yisdbfiu',
             }
-        return test_item
+    
+    #docs = [get_test_item() for i in range(int(amount))]
+    #test_collection.insert(docs) 
     start = time.time()
-    amount_per_greenlet = int(int(amount) / GREENLETS)
+    #amount_per_greenlet = int(int(amount) / GREENLETS)
+    #for i in range(int(amount)):
+    #    test_collection.insert(get_test_item()) 
     
-    def insert_to_mongo():
-        for i in range(amount_per_greenlet):
-            test_collection.insert(get_test_item())
+    """ Insert by series (20 per time) """
+    records_per_iter = 20
+    count_of_iter = int(amount)/records_per_iter
     
-    jobs = [gevent.spawn(insert_to_mongo) for g in range(GREENLETS)]
-    gevent.joinall(jobs)
+    for i in range(count_of_iter):
+        docs = [get_test_item() for e in range(records_per_iter)]
+        test_collection.insert(docs) 
+    
     delta = time.time() - start
     return {'success': True, 'time': delta, 'count': test_collection.count()}
     
@@ -92,7 +108,48 @@ def get_marker(request, uid):
     if marker: success = True
     else: success = False
     return {'success': success, 'time': delta}
+
+@ajax_response
+def insert_indexed_marker(request, uid):
+    start = time.time()
+    test_collection = get_collection()
+    marker = {'text': "Hey-hey, i'm an indexed marker", 'indexed_id': uid}
+    test_collection.insert(marker)
+    delta = time.time() - start
+    return {'success': True, 'time': delta}
     
+@ajax_response
+def get_indexed_marker(request, uid):
+    start = time.time() 
+    test_collection = get_collection()
+    marker = test_collection.find_one({'indexed_id': uid})
+    delta = time.time() - start
+    if marker: success = True
+    else: success = False
+    return {'success': success, 'time': delta}    
+
+@ajax_response
+def create_index(request):
+    "Create index for marker"
+    start = time.time() 
+    test_collection = get_collection()
+    test_collection.create_index('marker_id')
+    delta = time.time() - start
+    return {'success': True, 'time': delta}
+
+@ajax_response
+def drop_index(request):
+    "Drop index for the marker"
+    start = time.time() 
+    test_collection = get_collection()
+    try:
+        test_collection.drop_index('marker_id_1')
+    except pymongo.errors.OperationFailure:
+        pass
+    delta = time.time() - start
+    return {'success': True, 'time': delta}
+
+
 @ajax_response
 def drop_collection(request):
     start = time.time()
