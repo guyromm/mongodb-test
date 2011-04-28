@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
+# mongoimport -h localhost -d test_database -c test_collection --type json testdumps.log
 # Here is the code for communicate with MongoDB
 from noodles.http import Response, ajax_response
 from noodles.templates import render_to
 from pymongo import Connection
 import pymongo, time, random, string, gevent
 from pymongo import ASCENDING, DESCENDING
+import subprocess
 
 def get_collection():
     connection = Connection()
@@ -149,6 +151,18 @@ def drop_index(request):
     delta = time.time() - start
     return {'success': True, 'time': delta}
 
+@ajax_response
+def insert_100k(request):
+    "Insert 100k records from dumps"
+    # Mongo insert command
+    # mongoimport -h localhost -d test_database -c test_collection --type csv -f no,such,thing,as,free,lunch testdumps.csv --upsert
+    # mongoimport -h localhost -d test_database -c test_collection --type json -f no,such,thing,as,free,lunch dumps.son --upsert
+    cmd ='mongoimport -h localhost -d test_database -c test_collection --type json -f no,such,thing,as,free,lunch dumps.son --upsert'
+    #cmd = 'mongoimport -h localhost -d test_database -c test_collection --type csv -f no,such,thing,as,free,lunch testdumps.csv --upsert'
+    start = time.time()
+    res = subprocess.call(cmd, shell=True)
+    delta = time.time() - start
+    return {'success': True, 'time': delta, 'res': res}
 
 @ajax_response
 def drop_collection(request):

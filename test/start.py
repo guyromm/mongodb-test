@@ -19,59 +19,38 @@ if __name__ == '__main__':
     
     # Output csv file
     csv_outf = open('metrics_%s.csv' % datetime.now().strftime('%d.%m_%H:%M:%S'), 'wb')
+    csvav_outf = open('average_%s.csv' % datetime.now().strftime('%d.%m_%H:%M:%S'), 'wb')
     
     try:
         resp = send_request('/check/mongo/connect')
     except urllib2.URLError:
         print "Server is down"
         exit(0)
-    send_request('/drop/index')
-    # Insert at first 50 markers
-    for i in range(50): send_request('/insert/marker/%i' % i)
+    # Insert at first 50 indexed markers
+    for i in range(50): send_request('/insert/indexed/%i' % i)
     MARKERS_COUNT += 50
     
-    csv_outf.write('iteration;count;average_not_indexed;create_index_time;average_indexed;drop_index;\n')
+    csv_outf.write('iteration;count;get_time;\n')
     
-    for i1 in range(100):
-        for i2 in range(10):
-            print send_request('/create/docs/10000')
-            send_request('/insert/marker/%i' % (MARKERS_COUNT + i2))
-        MARKERS_COUNT += 10
+    for i1 in range(1000):
+
+        print send_request('/create/docs/100000')
         resp = send_request('/get/count')
         resp = json.loads(resp)
         count_of_records = resp['count']
         print "Iteration is ready. Count of records is %s" % count_of_records
         print 'Perform reading'
-        # Unindexed reading
-        for i3 in range(50):
+        
+        for i2 in range(50):
             resp_times = []
-            resp = send_request('/get/marker/%i' % random.randint(0, MARKERS_COUNT))
+            resp = send_request('/get/indexed/%i' % i2)
             resp = json.loads(resp)
-            resp_times.append(float(resp['time']))
+            resp_times.append(resp['time'])
+            csv_outf.write('%i;%i;%s;\n' % (i1, count_of_records, str(resp['time']).replace('.', ',')))
         average_resp_time = sum(resp_times, 0.0) /  len(resp_times)
-        average_resp_time = str(average_resp_time).replace('.', ',')
-        print "Average response time is %s s." % average_resp_time
+        print "Average response time is %f s." % average_resp_time
+        csvav_outf.write('%i;%i;%s;\n' % (i1, count_of_records, str(average_resp_time).replace('.', ',')))
         
-        
-        # Create index for markers
-        creat_index_time = json.loads(send_request('/create/index'))['time']
-        creat_index_time = str(creat_index_time).replace('.', ',')
-        # Indexed read
-        for i4 in range(50):
-            resp_times = []
-            resp = send_request('/get/marker/%i' % random.randint(0, MARKERS_COUNT))
-            resp = json.loads(resp)
-            resp_times.append(float(resp['time']))
-        average_indexed = sum(resp_times, 0.0) /  len(resp_times)
-        average_indexed = str(average_indexed).replace('.', ',')
-        print "Average response time after indexing is %s s." % average_indexed
-        
-        drop_index_time = json.loads(send_request('/drop/index'))['time']
-        drop_index_time = str(drop_index_time).replace('.', ',')
-        
-        csv_outf.write('%i;%i;%s;%s;%s;%s;\n' % 
-            (i1, count_of_records, average_resp_time, creat_index_time, average_indexed, drop_index_time))
-
     print send_request('/get/count')
     print send_request('/drop/collection')
     
