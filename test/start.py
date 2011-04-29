@@ -27,23 +27,25 @@ if __name__ == '__main__':
         print "Server is down"
         exit(0)
     # Insert at first 50 indexed markers
-    for i in range(50): send_request('/insert/indexed/%i' % i)
-    MARKERS_COUNT += 50
+    #for i in range(50): send_request('/insert/indexed/%i' % i)
+    #MARKERS_COUNT += 50
     
     csv_outf.write('iteration;count;get_time;\n')
     
-    for i1 in range(1000):
-
-        print send_request('/create/docs/100000')
-        resp = send_request('/get/count')
+    for i1 in range(10):
+        # insert 100 000 records
+        resp = send_request('/insert/100k/%i' % i1)
+        print resp
         resp = json.loads(resp)
         count_of_records = resp['count']
         print "Iteration is ready. Count of records is %s" % count_of_records
         print 'Perform reading'
         
-        for i2 in range(50):
+        for i2 in range((i1+1)*50000 - 50, (i1+1)*50000):
             resp_times = []
-            resp = send_request('/get/indexed/%i' % i2)
+            resp = send_request('/get/item/%i' % i2)
+            #print i2
+            #print resp
             resp = json.loads(resp)
             resp_times.append(resp['time'])
             csv_outf.write('%i;%i;%s;\n' % (i1, count_of_records, str(resp['time']).replace('.', ',')))
