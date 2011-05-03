@@ -26,13 +26,10 @@ if __name__ == '__main__':
     except urllib2.URLError:
         print "Server is down"
         exit(0)
-    # Insert at first 50 indexed markers
-    #for i in range(50): send_request('/insert/indexed/%i' % i)
-    #MARKERS_COUNT += 50
     
     csv_outf.write('iteration;count;get_time;\n')
     
-    for i1 in range(10):
+    for i1 in range(100):
         # insert 100 000 records
         resp = send_request('/insert/100k/%i' % i1)
         print resp

@@ -22,8 +22,9 @@ def get_map():
     map.connect(None, '/get/indexed/{uid:\d+}', controller="controllers", action="get_indexed_marker")
     map.connect(None, '/create/index', controller="controllers", action="create_index")
     map.connect(None, '/drop/index', controller="controllers", action="drop_index")
-    map.connect(None, '/insert/100k/{count:\d+}', controller="controllers", action="insert_100k")
-    map.connect(None, '/get/item/{uid:\d+}', controller="controllers", action="get_item")
+    
+    map.connect(None, '/insert/100k/{count:\d+}', controller="test_controllers", action="insert_100k")
+    map.connect(None, '/get/item/{uid:\d+}', controller="test_controllers", action="get_item")
     
     if DEBUG:
         map.connect(None, '/static/{path_info:.*}', controller="static", action="index") #Handling static files
