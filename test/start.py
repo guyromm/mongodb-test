@@ -6,6 +6,7 @@ from datetime import datetime
 import json
 import random
 
+
 PORT = 8090
 HOST = 'localhost'
 base_url = 'http://%s:%i' % (HOST, PORT)
@@ -31,14 +32,14 @@ if __name__ == '__main__':
     
     for i1 in range(100):
         # insert 100 000 records
-        resp = send_request('/insert/100k/%i' % i1)
+        resp = send_request('/insert/1m/%i' % i1)
         print resp
         resp = json.loads(resp)
         count_of_records = resp['count']
         print "Iteration is ready. Count of records is %s" % count_of_records
         print 'Perform reading'
         
-        for i2 in range((i1+1)*50000 - 50, (i1+1)*50000):
+        for i2 in range((i1+1)*500000 - 500, (i1+1)*500000):
             resp_times = []
             resp = send_request('/get/item/%i' % i2)
             #print i2

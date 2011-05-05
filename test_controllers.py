@@ -5,7 +5,7 @@
 """
 from controllers import get_collection
 from noodles.http import Response, ajax_response
-
+import time, md5
 
 def get_test_item(uid):
         #print uid
@@ -49,7 +49,21 @@ def insert_100k(request, count):
     delta = time.time() - start
     return {'success': True, 'time': delta, 'count': test_collection.count()}
 
-
+@ajax_response
+def insert_1m(request, count):
+    records_per_iter = 100
+    count_of_iter = 10000
+    start = time.time()
+    test_collection = get_collection()
+    test_collection.drop_index('indexed_id_1')
+    for i in range(count_of_iter):
+        docs = [get_test_item(1000000*int(count) + i*records_per_iter + e) for e in range(records_per_iter)]
+        test_collection.insert(docs)
+#    perform_dump(count)
+#    res = subprocess.call(cmd, shell=True)
+    test_collection.ensure_index('indexed_id', unique = True)
+    delta = time.time() - start
+    return {'success': True, 'time': delta, 'count': test_collection.count()}
 
 @ajax_response
 def get_item(request, uid):
