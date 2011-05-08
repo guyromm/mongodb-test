@@ -13,7 +13,7 @@ def get_collection():
     connection = Connection()
     db = connection.test_database
     collection = db.test_collection
-    collection.ensure_index('indexed_id', unique = True)
+    #collection.ensure_index('indexed_id', unique = True)
     return collection
     
 def random_str(N):
