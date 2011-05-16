@@ -1,2 +1,4 @@
 *.pyc
 *~
+#test writes here
+static/data-changing.js

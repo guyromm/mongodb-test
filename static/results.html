@@ -1,7 +1,10 @@
 <!doctype html>
 <html>
   <head>
-    <script type='text/javascript' src='/static/data3.js'></script>
+    <style type='text/css'>
+      svg { border:solid black 1px; }
+      </style>
+    <script type='text/javascript' src='/static/data-changing.js'></script>
       </script>
 <script type='text/javascript' src='/static/raphael-min.js'></script>
 <script type='text/javascript'>
@@ -89,10 +92,10 @@ console.log(lines);
 					{
 					    var lpath = "M"+prev[dt][0]+" "+prev[dt][1]+"L"+xpos+" "+ypos;
 					    //console.log(lpath);
-					    if (only)
+				    //if (only)
 					    {
 						var l = paper.path(lpath);
-						//l.attr({stroke:colors[dt]});
+				    if (!only) l.attr({stroke:colors[dt]});
 					    }
 					}
 					prev[dt]=[xpos,ypos];

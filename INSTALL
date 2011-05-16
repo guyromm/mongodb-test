@@ -1,0 +1,18 @@
+sudo apt-get update
+
+#base packages
+sudo apt-get install emacs23-nox git-core screen python-setuptools
+#dev packages
+sudo apt-get install python-dev gcc libevent-dev
+
+#fetch sources
+root@mongo1:~/mongodb-test# git submodule update --recursive --init
+
+#python libs
+easy_install gevent gevent-websocket websocket WebOb redis routes mako pymongo
+
+
+#mongodb
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
+echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' >> /etc/apt/sources.list
+apt-get install mongodb-10gen

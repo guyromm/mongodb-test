@@ -6,7 +6,7 @@
 from controllers import get_collection
 from noodles.http import Response, ajax_response
 import time, md5,random
-import logging
+import logging,json,re
 log = logging.getLogger(__name__)
 letters = 'abcdefghijklmopqrstuvwxyz'
 testfields={}
@@ -109,7 +109,24 @@ def insert_1m(request,amt, count):
     inserts=[]
     curitems = test_collection.count()
     
+    def insappend(ins):
 
+        log.info(ins)
+        inserts.append(ins)
+        fp = open('static/data-changing.js','r')
+        dt = fp.read()
+        fp.close()
+        objres = re.compile('var data = (.*);').search(dt)
+        if objres:
+            objstr = objres.group(1)
+        else:
+            objstr = '[]';
+        obj = json.loads(objstr)
+        obj.append(ins)
+        fp = open('static/data-changing.js','w')
+        fp.write('var data = %s;'%json.dumps(obj))
+        fp.close()
+            
     for cnt in range(count):
         log.info('index section, going %s / %s'%(cnt,count))
         if not noindex:
@@ -119,8 +136,10 @@ def insert_1m(request,amt, count):
                 test_collection.drop_index('indexed_id_1')
                 dropindex_delta = time.time() - dropindex_start
                 ins = {'curitems':curitems,'time':dropindex_delta,'action':'drop_index'}
-                log.info(ins)                
-                inserts.append(ins)
+                insappend(ins)
+                #log.info(ins)                
+                #inserts.append(ins)
+                
             except pymongo.errors.OperationFailure:
                 log.info('index did not exist previously, lols')
         #get the current amount of items
@@ -146,8 +165,9 @@ def insert_1m(request,amt, count):
                 log.info('inserted, curitems = %s'%curitems)
         ins_delta = time.time() - start_ins
         ins = {'time':ins_delta,'curitems':curitems,'action':'insert'} #'amt':amt,'count':cnt,
-        log.info('insert %s done in %s: %s'%(cnt,ins_delta,ins))
-        inserts.append(ins)
+        #log.info('insert %s done in %s: %s'%(cnt,ins_delta,ins))
+        insappend(ins)
+        #inserts.append(ins)
         
         log.info('insert phase done')
     
@@ -158,8 +178,9 @@ def insert_1m(request,amt, count):
                 test_collection.ensure_index('indexed_id', unique = True)
                 createindex_delta = time.time() - createindex_start
                 ins = {'curitems':curitems,'time':createindex_delta,'action':'create_index'}
-                log.info(ins)
-                inserts.append(ins)
+                #log.info(ins)
+                #inserts.append(ins)
+                insappend(ins)
             except pymongo.errors.DuplicateKeyError:
                 log.error('FAILURE TO CREATE UNIQUE INDEX')
                 return {'success':False,'message':'unique index could not be created','inserts':inserts}
@@ -172,8 +193,9 @@ def insert_1m(request,amt, count):
                 assert rt['success']
                 seldelta+=rt['time']
             ins = {'curitems':curitems,'time':seldelta,'action':'select%s'%selectnum}
-            log.info(ins)
-            inserts.append(ins)
+            #log.info(ins)
+            #inserts.append(ins)
+            insappend(ins)
             
     delta = time.time() - start
     log.info('took us %s'%delta)
