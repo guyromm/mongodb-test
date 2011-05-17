@@ -5,7 +5,7 @@
 """
 from controllers import get_collection
 from noodles.http import Response, ajax_response
-import time, md5,random
+import time, md5,random,os
 import logging,json,re
 log = logging.getLogger(__name__)
 letters = 'abcdefghijklmopqrstuvwxyz'
@@ -113,9 +113,12 @@ def insert_1m(request,amt, count):
 
         log.info(ins)
         inserts.append(ins)
-        fp = open('static/data-changing.js','r')
-        dt = fp.read()
-        fp.close()
+        if os.path.exists('static/data-changing.js'):
+            fp = open('static/data-changing.js','r')
+            dt = fp.read()
+            fp.close()
+        else:
+            dt = 'var data = [];'
         objres = re.compile('var data = (.*);').search(dt)
         if objres:
             objstr = objres.group(1)
