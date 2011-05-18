@@ -14,7 +14,7 @@ connection = None
 def get_collection():
     global connection
     if not connection:
-        connection = Connection('10.181.239.133:10000')
+        connection = Connection(host='localhost',port=10000)
     else:
         pass
     db = connection.test_database
