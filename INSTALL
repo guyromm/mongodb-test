@@ -38,8 +38,8 @@ mongod --configsvr --config /root/mongodb-test/mongodb-cfg.conf
 mongos --port 10000 --configdb 10.181.239.133:9999
 
 mongo 10.181.239.133:10000/admin
-> db.runCommand({addshard:"10.181.238.238:27017"});
-> db.runCommand({addshard:"10.181.239.133:27017"});
+> db.runCommand({addshard:"10.181.238.238:27017",name:"mongo1"});
+> db.runCommand({addshard:"10.181.239.133:27017",name:"mongo2"});
 > db.runCommand({enablesharding:"test_database"});
 > db.runCommand({shardcollection:"test_database.test_collection",key:{indexed_id:1},unique:true});
 
