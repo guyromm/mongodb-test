@@ -20,10 +20,8 @@ easy_install gevent gevent-websocket websocket WebOb redis routes mako pymongo
 #mongodb
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
 echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' >> /etc/apt/sources.list
-<<<<<<< HEAD
+
 apt-get update
-apt-get install mongodb-10gen
-=======
 apt-get install mongodb-10gen
 
 #mongodb sharding config servers 
@@ -38,9 +36,8 @@ mongod --configsvr --config /root/mongodb-test/mongodb-cfg.conf
 mongos --port 10000 --configdb 10.181.239.133:9999
 
 mongo 10.181.239.133:10000/admin
-> db.runCommand({addshard:"10.181.238.238:27017"});
-> db.runCommand({addshard:"10.181.239.133:27017"});
+> db.runCommand({addshard:"10.181.238.238:27017",name:"mongo1"});
+> db.runCommand({addshard:"10.181.239.133:27017",name:"mongo2"});
 > db.runCommand({enablesharding:"test_database"});
 > db.runCommand({shardcollection:"test_database.test_collection",key:{indexed_id:1},unique:true});
 
->>>>>>> f25312df83c6b4eeb4b9eeed3a9809c59421b6b1
