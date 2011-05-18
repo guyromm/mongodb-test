@@ -224,4 +224,7 @@ if __name__ == '__main__':
     env['QUERY_STRING'] = wi #wsgi.input']=wi #pf
     env['REQUEST_METHOD']='GET'
     req = Request(env)
+    log.addHandler(logging.StreamHandler(sys.stdout))
+    log.setLevel(logging.INFO) ; 
+    log.info('about to run'); 
     print insert_1m_worker(req,amt,count)
