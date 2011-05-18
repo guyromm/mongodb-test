@@ -7,10 +7,16 @@ from noodles.templates import render_to
 from pymongo import Connection
 import pymongo, time, random, string, gevent
 from pymongo import ASCENDING, DESCENDING
-import subprocess, md5, json
+import subprocess, json
+
+connection = None
 
 def get_collection():
-    connection = Connection()
+    global connection
+    if not connection:
+        connection = Connection('10.181.239.133:10000')
+    else:
+        pass
     db = connection.test_database
     collection = db.test_collection
     #collection.ensure_index('indexed_id', unique = True)

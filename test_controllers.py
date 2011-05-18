@@ -5,8 +5,8 @@
 """
 from controllers import get_collection
 from noodles.http import Response, ajax_response
-import time, md5,random,os
-import logging,json,re
+import time, hashlib,random,os
+import logging,json,re,webob
 log = logging.getLogger(__name__)
 letters = 'abcdefghijklmopqrstuvwxyz'
 testfields={}
@@ -14,8 +14,11 @@ testfields={}
 def get_test_item(uid):
     global letters,testfields
         #print uid
+    hd = hashlib.md5()
+    hd.update(str(uid))
+    iid = hd.hexdigest()
     rt= {
-                'indexed_id': md5.new(str(uid)).hexdigest(),
+                'indexed_id': iid,
     }
     #we try to come up with a sort-of random item
     for i in range(10):
@@ -66,12 +69,16 @@ def get_test_item(uid):
 #     delta = time.time() - start
 #     return {'success': True, 'time': delta, 'count': test_collection.count()}
 
-import pymongo
+import pymongo,sys
+from noodles.http import Request
 
 def get_item_worker(uid):
     start = time.time()
     test_collection = get_collection()
-    marker = test_collection.find_one({'indexed_id': md5.new(str(uid)).hexdigest()})
+    hd = hashlib.md5()
+    hd.update(str(uid))
+    iid = hd.hexdigest()
+    marker = test_collection.find_one({'indexed_id': iid})
     #print marker
     if marker:
         success = True
@@ -84,9 +91,7 @@ def get_item_worker(uid):
 def get_item(request, uid):
     return get_item_worker(uid)
 
-
-@ajax_response
-def insert_1m(request,amt, count):
+def insert_1m_worker(request,amt,count):
     count = int(count)
     if amt=='1m':
         amt=1000000
@@ -204,3 +209,19 @@ def insert_1m(request,amt, count):
     log.info('took us %s'%delta)
     return {'success': True, 'time': delta, 'count': test_collection.count(),'inserts':inserts}
 
+
+@ajax_response
+def insert_1m(request,amt, count):
+    return insert_1m_worker(request,amt,count)
+
+if __name__ == '__main__':
+    env = webob.multidict.MultiDict()
+    url = sys.argv[1]
+    amt,count,bs,wi = re.compile('^\/insert\/([^\/]+)\/([^?]+)(|\?(.*))$').search(url).groups()
+    pf = webob.multidict.MultiDict()
+    pf['noindex'] = bool(re.compile('noindex').search(url))
+    pf['noselect'] = bool(re.compile('noindex').search(url))
+    env['QUERY_STRING'] = wi #wsgi.input']=wi #pf
+    env['REQUEST_METHOD']='GET'
+    req = Request(env)
+    print insert_1m_worker(req,amt,count)
