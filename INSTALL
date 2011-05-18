@@ -43,3 +43,5 @@ mongo 10.181.239.133:10000/admin
 > db.runCommand({enablesharding:"test_database"});
 > db.runCommand({shardcollection:"test_database.test_collection",key:{indexed_id:1},unique:true});
 
+#clean launch sequence:
+rm -rf /var/lib/mongocfg /var/lib/mongodb ; mkdir /var/lib/mongocfg /var/lib/mongodb ; cd mongodb-test ; git pull ; screen -c mongodb-test.screen
