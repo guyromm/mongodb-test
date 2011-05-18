@@ -31,6 +31,7 @@ mongod --configsvr --config /root/mongodb-test/mongodb-cfg.conf
 #our shards internal ips:
 #mongo1: 10.181.238.238
 #mongo2: 10.181.239.133
+#mongo3: 10.181.236.72
 
 #mongos coordinator listens on 10000
 mongos --port 10000 --configdb 10.181.239.133:9999
@@ -38,6 +39,7 @@ mongos --port 10000 --configdb 10.181.239.133:9999
 mongo 10.181.239.133:10000/admin
 > db.runCommand({addshard:"10.181.238.238:27017",name:"mongo1"});
 > db.runCommand({addshard:"10.181.239.133:27017",name:"mongo2"});
+> db.runCommand({addshard:"10.181.236.72:27017",name:"mongo3"});
 > db.runCommand({enablesharding:"test_database"});
 > db.runCommand({shardcollection:"test_database.test_collection",key:{indexed_id:1},unique:true});
 
