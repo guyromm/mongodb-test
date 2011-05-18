@@ -104,6 +104,7 @@ def insert_1m_worker(request,amt,count):
 
     noindex = bool(request.params.get('noindex',False))
     noselect = bool(request.params.get('noselect',False))
+    sleep = int(request.params.get('sleep',0))
     log.info('starting off with a count of %s'%count)
     records_per_iter = 100
     count_of_iter = amt / records_per_iter
@@ -175,6 +176,10 @@ def insert_1m_worker(request,amt,count):
         ins = {'time':ins_delta,'curitems':curitems,'action':'insert'} #'amt':amt,'count':cnt,
         #log.info('insert %s done in %s: %s'%(cnt,ins_delta,ins))
         insappend(ins)
+
+        if sleep:
+            log.info('sleeping (for sharding pacification purposes) - %s'%sleep)
+            time.sleep(sleep)
         #inserts.append(ins)
         
         log.info('insert phase done')
