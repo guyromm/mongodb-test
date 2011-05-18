@@ -1,3 +1,4 @@
+caption always "%H %= %-w%L>%{= BW}%n*%t%{-}%52<%+w %L="
 chdir /root/mongodb-test
 screen -t emacs 0 emacs mongodb-test.screen
 screen -t shell 1 bash
