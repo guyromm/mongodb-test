@@ -3,6 +3,6 @@ screen -t emacs 0 emacs mongodb-test.screen
 screen -t shell 1 bash
 screen -t mongo1 2  mongo 10.181.238.238:27017/test_database
 screen -t mongo2 3  mongo 10.181.239.133:27017/test_database
-screen -t mongocfg 4 mongod --configsvr --config /root/mongodb-test/mongodb-cfg.conf
+screen -t mongocfg 4 mongod --configsvr -f /root/mongodb-test/mongodb-cfg.conf
 screen -t mongos 5  mongos -f /root/mongodb-test/mongos.conf
 screen -t mongos-client 6 mongo localhost:10000/admin
