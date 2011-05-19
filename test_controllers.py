@@ -7,6 +7,7 @@ from controllers import get_collection
 from noodles.http import Response, ajax_response
 import time, hashlib,random,os
 import logging,json,re,webob
+from commands import getstatusoutput as gso
 log = logging.getLogger(__name__)
 letters = 'abcdefghijklmopqrstuvwxyz'
 testfields={}
@@ -72,9 +73,9 @@ def get_test_item(uid):
 import pymongo,sys
 from noodles.http import Request
 
-def get_item_worker(uid):
+def get_item_worker(uid,colname):
     start = time.time()
-    test_collection = get_collection()
+    test_collection = get_collection(colname)
     hd = hashlib.md5()
     hd.update(str(uid))
     iid = hd.hexdigest()
@@ -102,25 +103,37 @@ def insert_1m_worker(request,amt,count):
     else:
         amt = int(amt)
 
+    def create_index():
+        log.info('creating index')
+        createindex_start = time.time()
+        test_collection.ensure_index('indexed_id', unique = True)
+        createindex_delta = time.time() - createindex_start
+        ins = {'curitems':curitems,'time':createindex_delta,'action':'create_index'}
+        return ins
+
+    initialindex = bool(request.params.get('initialindex',False))
     noindex = bool(request.params.get('noindex',False))
     noselect = bool(request.params.get('noselect',False))
+    colname = request.params.get('collection','test_collection')
     sleep = int(request.params.get('sleep',0))
+
     log.info('starting off with a count of %s'%count)
     records_per_iter = 100
     count_of_iter = amt / records_per_iter
     log.info('running %s iterations of %s records each. noindex=%s'%(count_of_iter,records_per_iter,noindex))
     start = time.time()
     log.info('getting collection')
-    test_collection = get_collection()
+    test_collection = get_collection(colname)
     inserts=[]
     curitems = test_collection.count()
+
     
     def insappend(ins):
-
+        fname = 'static/%s.data.js'%colname
         log.info(ins)
         inserts.append(ins)
-        if os.path.exists('static/data-changing.js'):
-            fp = open('static/data-changing.js','r')
+        if os.path.exists(fname):
+            fp = open(fname,'r')
             dt = fp.read()
             fp.close()
         else:
@@ -132,9 +145,15 @@ def insert_1m_worker(request,amt,count):
             objstr = '[]';
         obj = json.loads(objstr)
         obj.append(ins)
-        fp = open('static/data-changing.js','w')
+        fp = open(fname,'w')
         fp.write('var data = %s;'%json.dumps(obj))
         fp.close()
+
+    args = {'action':'begin','amt':amt,'count':count,'initialindex':initialindex,'noindex':noindex,'noselect':noselect,'colname':colname,'sleep':sleep}
+    insappend(args)
+
+    if initialindex:
+        insappend(create_index())
             
     for cnt in range(count):
         log.info('index section, going %s / %s'%(cnt,count))
@@ -146,8 +165,6 @@ def insert_1m_worker(request,amt,count):
                 dropindex_delta = time.time() - dropindex_start
                 ins = {'curitems':curitems,'time':dropindex_delta,'action':'drop_index'}
                 insappend(ins)
-                #log.info(ins)                
-                #inserts.append(ins)
                 
             except pymongo.errors.OperationFailure:
                 log.info('index did not exist previously, lols')
@@ -177,37 +194,34 @@ def insert_1m_worker(request,amt,count):
         #log.info('insert %s done in %s: %s'%(cnt,ins_delta,ins))
         insappend(ins)
 
+        if 'single' in colname:
+            st,op = gso('du -s -m /var/lib/mongodb | cut -f1')
+            print 'du returned %s,%s'%(op,st)
+            assert st==0 ; datasize = int(op)
+            ins = {'time':datasize,'curitems':curitems,'action':'data_size'}
+            insappend(ins)
         if sleep:
             log.info('sleeping (for sharding pacification purposes) - %s'%sleep)
             time.sleep(sleep)
-        #inserts.append(ins)
-        
         log.info('insert phase done')
     
         if not noindex:
             try:
-                log.info('creating index')
-                createindex_start = time.time()
-                test_collection.ensure_index('indexed_id', unique = True)
-                createindex_delta = time.time() - createindex_start
-                ins = {'curitems':curitems,'time':createindex_delta,'action':'create_index'}
-                #log.info(ins)
-                #inserts.append(ins)
+                ins = create_index()
                 insappend(ins)
             except pymongo.errors.DuplicateKeyError:
                 log.error('FAILURE TO CREATE UNIQUE INDEX')
                 return {'success':False,'message':'unique index could not be created','inserts':inserts}
+            
         if not noselect and curitems:
             seldelta=0
             selectnum = 1000
             for i in range(selectnum):
                 uid = random.randrange(curitems)
-                rt = get_item_worker(uid)
+                rt = get_item_worker(uid,colname)
                 assert rt['success']
                 seldelta+=rt['time']
             ins = {'curitems':curitems,'time':seldelta,'action':'select%s'%selectnum}
-            #log.info(ins)
-            #inserts.append(ins)
             insappend(ins)
             
     delta = time.time() - start

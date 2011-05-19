@@ -11,14 +11,18 @@ import subprocess, json
 
 connection = None
 
-def get_collection():
+def get_collection(colname):
     global connection
     if not connection:
-        connection = Connection(host='localhost',port=10000)
+        #raise Exception('%s , %s'%(colname,'single' in colname))
+        if 'single' not in colname: #hackity hack :P
+            connection = Connection(host='localhost',port=10000)
+        else:
+            connection = Connection()
     else:
         pass
     db = connection.test_database
-    collection = db.test_collection
+    collection = getattr(db,colname) 
     #collection.ensure_index('indexed_id', unique = True)
     return collection
     
