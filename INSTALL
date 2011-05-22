@@ -21,25 +21,33 @@ easy_install gevent gevent-websocket websocket WebOb redis routes mako pymongo
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
 echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' >> /etc/apt/sources.list
 
-apt-get update
-apt-get install mongodb-10gen
+apt-get update ; apt-get install mongodb-10gen
 
 #mongodb sharding config servers 
 sudo mkdir /var/lib/mongocfg
 mongod --configsvr --config /root/mongodb-test/mongodb-cfg.conf
 
+
 #our shards internal ips:
-#mongo1: 10.181.238.238
-#mongo2: 10.181.239.133
-#mongo3: 10.181.236.72
+#mongo1: 
+10.181.238.238
+#mongo2: 
+10.181.239.133
+#mongo3: 
+10.181.236.72
 
 #mongos coordinator listens on 10000
 mongos --port 10000 --configdb 10.181.239.133:9999
 
 mongo 10.181.239.133:10000/admin
-db.runCommand({addshard:"10.181.238.238:27017",name:"mongo1",maxSize:2000});
-db.runCommand({addshard:"10.181.239.133:27017",name:"mongo2",maxSize:2000});
-db.runCommand({addshard:"10.181.236.72:27017",name:"mongo3",maxSize:2000});
+db.runCommand({addshard:"10.181.238.238:27017",maxSize:2000,name:"mongo1"});
+db.runCommand({addshard:"10.181.239.133:27017",maxSize:2000,name:"mongo2"});
+db.runCommand({addshard:"10.181.236.72:27017",maxSize:2000,name:"mongo3"});
+
+#the rest of them:
+var onodes = ['10.181.230.130','10.181.228.196','10.181.229.16','10.181.226.204','10.181.229.195','10.181.228.74','10.181.226.130'];
+for (var i=0;i<onodes.length;i++) db.runCommand({addshard:onodes[i],maxSize:2000,name:"extrashard"+i});
+
 db.runCommand({enablesharding:"test_database"});
 db.runCommand({shardcollection:"test_database.sharded_3nodes",key:{indexed_id:1}});
 

@@ -1,0 +1,24 @@
+#xargs usage:
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} uname -a
+
+#install packages
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} "apt-get update ; sudo apt-get install -y emacs23-nox git-core screen python-setuptools python-dev gcc libevent-dev"
+
+#check that we have github access
+for H in `cat machines.txt ` ; do echo $H ; ssh $H "ssh git@github.com" ;  done
+#simultaneous
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} ssh git@github.com
+
+#fetch the git repo
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'cd ~/ ; git clone git@github.com:guyromm/mongodb-test.git ; git config --global user.name "Guy Romm" ; git config --global user.email guyromm@gmail.com'
+
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'cd ~/mongodb-test ; git submodule update --recursive --init'
+
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'easy_install gevent gevent-websocket websocket WebOb redis routes mako pymongo'
+
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} "sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10 ; echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' >> /etc/apt/sources.list"
+
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} "apt-get update ; apt-get install mongodb-10gen"
+
+#secondary interfaces
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} "ifconfig eth1 | grep 'inet addr' | cut -d: -f2 | cut -f1 -d' '"
