@@ -37,11 +37,25 @@ mongod --configsvr --config /root/mongodb-test/mongodb-cfg.conf
 mongos --port 10000 --configdb 10.181.239.133:9999
 
 mongo 10.181.239.133:10000/admin
-> db.runCommand({addshard:"10.181.238.238:27017",name:"mongo1"});
-> db.runCommand({addshard:"10.181.239.133:27017",name:"mongo2"});
-> db.runCommand({addshard:"10.181.236.72:27017",name:"mongo3"});
-> db.runCommand({enablesharding:"test_database"});
-> db.runCommand({shardcollection:"test_database.test_collection",key:{indexed_id:1}}); #,unique:true});
+db.runCommand({addshard:"10.181.238.238:27017",name:"mongo1",maxSize:2000});
+db.runCommand({addshard:"10.181.239.133:27017",name:"mongo2",maxSize:2000});
+db.runCommand({addshard:"10.181.236.72:27017",name:"mongo3",maxSize:2000});
+db.runCommand({enablesharding:"test_database"});
+db.runCommand({shardcollection:"test_database.sharded_3nodes",key:{indexed_id:1}});
+
+#pre split command:
+#var l = '0123456790abcdef';var nn = 3;for (var x=0;x<l.length;x++) for(var y=0;y<l.length;y+=3) print(l[x]+l[y]);
+
+var l = '0123456790abcdef';var nn = 3;
+for (var x=0;x<l.length;x++) for(var y=0;y<l.length;y+=3) db.runCommand({split:"test_database.sharded_3nodes",middle:{indexed_id:l[x]+l[y] } })
+
+
 
 #clean launch sequence:
 rm -rf /var/lib/mongocfg /var/lib/mongodb ; mkdir /var/lib/mongocfg /var/lib/mongodb ; cd mongodb-test ; git pull ; screen -c mongodb-test.screen
+
+#run on a single instance
+python test_controllers.py '/insert/100k/50?noindex=1&sleep=0&collection=mongo1_single&initialindex=1'
+
+#run on a sharded cluster
+python test_controllers.py '/insert/100k/50?noindex=1&sleep=0&collection=sharded_3nodes&initialindex=1'
