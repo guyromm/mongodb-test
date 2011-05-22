@@ -20,5 +20,11 @@ cat machines.txt | xargs -P0 -n1 -I{} ssh {} "sudo apt-key adv --keyserver keyse
 
 cat machines.txt | xargs -P0 -n1 -I{} ssh {} "apt-get update ; apt-get install mongodb-10gen"
 
-#secondary interfaces
+#fetch secondary interfaces
 cat machines.txt | xargs -P0 -n1 -I{} ssh {} "ifconfig eth1 | grep 'inet addr' | cut -d: -f2 | cut -f1 -d' '"
+
+#pull latest ver
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'cd ~/mongodb-test ; git pull'
+
+#init screen
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'screen -d -m -c ~/mongodb-test/mongodb-test.slave.screen'
