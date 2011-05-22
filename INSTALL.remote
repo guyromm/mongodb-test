@@ -28,3 +28,12 @@ cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'cd ~/mongodb-test ; git pull'
 
 #init screen
 cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'screen -d -m -c ~/mongodb-test/mongodb-test.slave.screen'
+
+#killall mongod and mongos
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'killall5 -9 mongod mongos'
+
+#see if mongo is running
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'ps aux | grep mongod'
+
+#recreate confs
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'rm -rf /var/lib/mongocfg /var/lib/mongodb ; mkdir /var/lib/mongocfg /var/lib/mongodb'
