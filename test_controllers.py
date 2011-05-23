@@ -20,6 +20,7 @@ def get_test_item(uid):
     iid = hd.hexdigest()
     rt= {
                 'indexed_id': iid,
+		'int_id':uid
     }
     #we try to come up with a sort-of random item
     for i in range(10):
@@ -219,7 +220,8 @@ def insert_1m_worker(request,amt,count):
             for i in range(selectnum):
                 uid = random.randrange(curitems)
                 rt = get_item_worker(uid,colname)
-                assert rt['success']
+                assert rt['success'],"we were not succesful getting worker %s out of %s  inserted (%s/%s)"%(uid,curitems,i,selectnum)
+
                 seldelta+=rt['time']
             ins = {'curitems':curitems,'time':seldelta,'action':'select%s'%selectnum}
             insappend(ins)
