@@ -49,13 +49,15 @@ var onodes = ['10.181.230.130','10.181.228.196','10.181.229.16','10.181.226.204'
 for (var i=0;i<onodes.length;i++) db.runCommand({addshard:onodes[i],maxSize:2000,name:"extrashard"+i});
 
 db.runCommand({enablesharding:"test_database"});
-db.runCommand({shardcollection:"test_database.sharded_3nodes",key:{indexed_id:1}});
+var colname = 'sharded_10nodes';
+db.runCommand({shardcollection:"test_database."+colname,key:{indexed_id:1}});
 
 #pre split command:
 #var l = '0123456790abcdef';var nn = 3;for (var x=0;x<l.length;x++) for(var y=0;y<l.length;y+=3) print(l[x]+l[y]);
 
-var l = '0123456790abcdef';var nn = 3;
-for (var x=0;x<l.length;x++) for(var y=0;y<l.length;y+=3) db.runCommand({split:"test_database.sharded_3nodes",middle:{indexed_id:l[x]+l[y] } })
+var l = '0123456790abcdef';var nn = 1;
+for (var x=0;x<l.length;x++) for(var y=0;y<l.length;y+=nn) 
+    db.runCommand({split:"test_database."+colname,middle:{indexed_id:l[x]+l[y] } });
 
 
 
