@@ -40,12 +40,13 @@ mongod --configsvr --config /root/mongodb-test/mongodb-cfg.conf
 mongos --port 10000 --configdb 10.181.239.133:9999
 
 mongo 10.181.239.133:10000/admin
-db.runCommand({addshard:"10.181.238.238:27017",maxSize:2000,name:"mongo1"});
-db.runCommand({addshard:"10.181.239.133:27017",maxSize:2000,name:"mongo2"});
-db.runCommand({addshard:"10.181.236.72:27017",maxSize:2000,name:"mongo3"});
+var maxsize=null;
+
+db.runCommand({addshard:"10.181.238.238:27017",maxSize:maxsize,name:"mongo1"});
+db.runCommand({addshard:"10.181.239.133:27017",maxSize:maxsize,name:"mongo2"});
+db.runCommand({addshard:"10.181.236.72:27017",maxSize:maxsize,name:"mongo3"});
 
 #the rest of them:
-var maxsize=null;
 var onodes = ['10.181.230.130',
     '10.181.228.196','10.181.229.16','10.181.226.204','10.181.229.195','10.181.228.74','10.181.226.130'];
 for (var i=0;i<onodes.length;i++) db.runCommand({addshard:onodes[i],maxSize:maxsize,name:"extrashard"+i});
@@ -53,9 +54,6 @@ for (var i=0;i<onodes.length;i++) db.runCommand({addshard:onodes[i],maxSize:maxs
 db.runCommand({enablesharding:"test_database"});
 var colname = 'sharded_10nodes';
 db.runCommand({shardcollection:"test_database."+colname,key:{indexed_id:1}});
-
-#pre split command:
-#var l = '0123456790abcdef';var nn = 3;for (var x=0;x<l.length;x++) for(var y=0;y<l.length;y+=3) print(l[x]+l[y]);
 
 var l = '0123456790abcdef';var nn = 2; var cnt=0;
 for (var x=0;x<l.length;x++) for(var y=0;y<l.length;y+=nn)  for (var z=0;z<l.length;z+=nn*3)  { 	print(l[x]+l[y]+l[z]); cnt++; }
