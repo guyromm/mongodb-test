@@ -1,4 +1,4 @@
-sudo apt-get update
+mongsudo apt-get update
 
 #base packages
 sudo apt-get install emacs23-nox git-core screen python-setuptools
@@ -57,7 +57,7 @@ db.runCommand({shardcollection:"test_database."+colname,key:{indexed_id:1}});
 #var l = '0123456790abcdef';var nn = 3;for (var x=0;x<l.length;x++) for(var y=0;y<l.length;y+=3) print(l[x]+l[y]);
 
 var l = '0123456790abcdef';var nn = 1;
-for (var x=0;x<l.length;x++) for(var y=0;y<l.length;y+=nn)  for (var z=0;z<l.length;z+=nn*3)
+for (var x=0;x<l.length;x++) for(var y=0;y<l.length;y+=nn)  for (var z=0;z<l.length;z+=nn*10) 
              db.runCommand({split:"test_database."+colname,middle:{indexed_id:l[x]+l[y]+l[z] } });
 
 
