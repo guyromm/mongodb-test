@@ -1,5 +1,5 @@
 #conf
 caption always "%H %= %-w%L>%{= BW}%n*%t%{-}%52<%+w %L="
 chdir /root/mongodb-test
-screen -t mongod 8 mongod -f /etc/mongodb.conf
+screen -t mongod 8 mongodb/bin/mongod -f /etc/mongodb.conf
 screen -t shell 1 bash

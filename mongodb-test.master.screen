@@ -2,17 +2,18 @@
 caption always "%H %= %-w%L>%{= BW}%n*%t%{-}%52<%+w %L="
 chdir /root/mongodb-test
 sleep 2
-screen -t mongocfg 5 mongod --configsvr -f /root/mongodb-test/mongodb-cfg.conf
+screen -t mongocfg 5 mongodb/bin/mongod --configsvr -f /root/mongodb-test/mongodb-cfg.conf
 sleep 2
 
 #shells & clients
 screen -t emacs 0 emacs mongodb-test.screen INSTALL
 screen -t shell 1 bash
-screen -t mongo1 2  mongo 10.181.238.238:27017/test_database
-screen -t mongo2 3  mongo 10.181.239.133:27017/test_database
-screen -t mongo3 4  mongo 10.181.236.72:27017/test_database
-screen -t mongos-client 7 mongo localhost:10000/admin
+screen -t mongo1 2  mongodb/bin/mongo 10.181.238.238:27017/test_database
+screen -t mongo2 3  mongodb/bin/mongo 10.181.239.133:27017/test_database
+screen -t mongo3 4  mongodb/bin/mongo 10.181.236.72:27017/test_database
 
 #run mongos when all config servers are up and running
 sleep 10
-screen -t mongos 6 mongos -f /root/mongodb-test/mongos.conf
+screen -t mongos 6 mongodb/bin/mongos -f /root/mongodb-test/mongos.conf
+sleep 3
+screen -t mongos-client 7 mongodb/bin/mongo localhost:10000/admin
