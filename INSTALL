@@ -45,7 +45,8 @@ db.runCommand({addshard:"10.181.239.133:27017",maxSize:2000,name:"mongo2"});
 db.runCommand({addshard:"10.181.236.72:27017",maxSize:2000,name:"mongo3"});
 
 #the rest of them:
-var onodes = ['10.181.230.130','10.181.228.196','10.181.229.16','10.181.226.204','10.181.229.195','10.181.228.74','10.181.226.130'];
+var onodes = ['10.181.230.130',
+    '10.181.228.196','10.181.229.16','10.181.226.204','10.181.229.195','10.181.228.74','10.181.226.130'];
 for (var i=0;i<onodes.length;i++) db.runCommand({addshard:onodes[i],maxSize:2000,name:"extrashard"+i});
 
 db.runCommand({enablesharding:"test_database"});
@@ -56,16 +57,19 @@ db.runCommand({shardcollection:"test_database."+colname,key:{indexed_id:1}});
 #var l = '0123456790abcdef';var nn = 3;for (var x=0;x<l.length;x++) for(var y=0;y<l.length;y+=3) print(l[x]+l[y]);
 
 var l = '0123456790abcdef';var nn = 1;
-for (var x=0;x<l.length;x++) for(var y=0;y<l.length;y+=nn) 
-    db.runCommand({split:"test_database."+colname,middle:{indexed_id:l[x]+l[y] } });
+for (var x=0;x<l.length;x++) for(var y=0;y<l.length;y+=nn)  for (var z=0;z<l.length;z+=nn*3)
+             db.runCommand({split:"test_database."+colname,middle:{indexed_id:l[x]+l[y]+l[z] } });
 
 
 
-#clean launch sequence:
-rm -rf /var/lib/mongocfg /var/lib/mongodb ; mkdir /var/lib/mongocfg /var/lib/mongodb ; cd mongodb-test ; git pull ; screen -S master -c mongodb-test.screen
+	 #clean launch sequence:
+	 rm -rf /var/lib/mongocfg /var/lib/mongodb ; mkdir /var/lib/mongocfg /var/lib/mongodb ; cd mongodb-test ; git pull ; screen -S master -c mongodb-test.screen
 
-#run on a single instance
-python test_controllers.py '/insert/100k/50?noindex=1&sleep=0&collection=mongo1_single&initialindex=1'
+	 #run on a single instance
+	 python test_controllers.py '/insert/100k/50?noindex=1&sleep=0&collection=mongo1_single&initialindex=1'
 
-#run on a sharded cluster
-python test_controllers.py '/insert/100k/50?noindex=1&sleep=0&collection=sharded_3nodes&initialindex=1'
+	 #run on a sharded cluster
+	 python test_controllers.py '/insert/100k/50?noindex=1&sleep=0&collection=sharded_3nodes&initialindex=1'
+
+	 #run 30m on a 10 node sharded cluster
+	 python test_controllers.py '/insert/100k/300?noindex=1&sleep=0&collection=sharded_10nodes_30m&initialindex=1'
