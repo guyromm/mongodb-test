@@ -26,14 +26,21 @@ cat machines.txt | xargs -P0 -n1 -I{} ssh {} "ifconfig eth1 | grep 'inet addr' |
 #pull latest ver
 cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'cd ~/mongodb-test ; git pull'
 
-#init screen
-cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'screen -d -m -c ~/mongodb-test/mongodb-test.slave.screen'
+#check which screens are running
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'ps aux | grep screen | grep -v "grep screen" | wc'
+
+#killall screens
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'killall5 screen'
+
+#init slave mongo sessions
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'screen -S slave -d -m -c ~/mongodb-test/mongodb-test.slave.screen'
 
 #killall mongod and mongos
 cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'killall5 -9 mongod mongos'
 
 #see if mongo is running
-cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'ps aux | grep mongod'
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'ps aux | grep "mongod -f" | grep -v "grep mongod" | wc'
 
 #recreate confs
-cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'rm -rf /var/lib/mongocfg /var/lib/mongodb ; mkdir /var/lib/mongocfg /var/lib/mongodb'
+cat machines.txt |\
+     xargs -P0 -n1 -I{} ssh {} 'rm -rf /var/lib/mongocfg /var/lib/mongodb ; mkdir /var/lib/mongocfg /var/lib/mongodb'

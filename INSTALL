@@ -62,7 +62,7 @@ for (var x=0;x<l.length;x++) for(var y=0;y<l.length;y+=nn)
 
 
 #clean launch sequence:
-rm -rf /var/lib/mongocfg /var/lib/mongodb ; mkdir /var/lib/mongocfg /var/lib/mongodb ; cd mongodb-test ; git pull ; screen -c mongodb-test.screen
+rm -rf /var/lib/mongocfg /var/lib/mongodb ; mkdir /var/lib/mongocfg /var/lib/mongodb ; cd mongodb-test ; git pull ; screen -S master -c mongodb-test.screen
 
 #run on a single instance
 python test_controllers.py '/insert/100k/50?noindex=1&sleep=0&collection=mongo1_single&initialindex=1'
