@@ -37,16 +37,13 @@ for (var x=0;x<l.length;x++) for(var y=0;y<l.length;y+=nn)  for (var z=0;z<l.len
 print(cnt);
 
 #quickkk shard distribution :D
+use config;
 var d = db.shards.find({},{_id:1}).toArray();
 var c = db.chunks.find().toArray();
 var shid=0;
-for (chid in c) {
-    if (shid>=d.length) shid=0;
-    print ("assigning shard "+d[shid]._id+" to chunk "+chid);
-    c[chid].shard = d[shid]._id;
-    db.chunks.save(c[chid]);
-    shid++;
-	}
+for (chid in c) {    if (shid>=d.length) shid=0;    print ("assigning shard "+d[shid]._id+" to chunk "+chid);    c[chid].shard = d[shid]._id;
+    db.chunks.save(c[chid]);    shid++;	}
+use admin;
 	 #clean launch sequence:
 	 rm -rf /var/lib/mongocfg /var/lib/mongodb ; mkdir /var/lib/mongocfg /var/lib/mongodb ; cd mongodb-test ; git pull ; screen -S master -c mongodb-test.screen
 
