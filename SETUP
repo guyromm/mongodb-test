@@ -9,7 +9,8 @@
 #mongos coordinator listens on 10000
 mongos --port 10000 --configdb 10.181.239.133:9999
 
-mongo 10.181.239.133:10000/admin
+#the following is done at mongos: mongo 10.181.239.133:10000/admin
+
 var maxsize=1500;
 
 db.runCommand({addshard:"10.181.238.238:27017",maxSize:maxsize,name:"mongo1"});
@@ -20,9 +21,7 @@ db.runCommand({addshard:"10.181.236.72:27017",maxSize:maxsize,name:"mongo3"});
 var onodes = ['10.181.230.130',
     '10.181.228.196','10.181.229.16','10.181.226.204','10.181.229.195','10.181.228.74','10.181.226.130',
     '10.181.226.118','10.181.230.39','10.181.227.43','10.181.227.122','10.181.227.59',
-    '10.181.230.69','10.181.230.67','10.181.226.124','10.181.224.243','10.181.230.216'
-
-    ];
+    '10.181.230.69','10.181.230.67','10.181.226.124','10.181.224.243','10.181.230.216'];
 for (var i=0;i<onodes.length;i++) db.runCommand({addshard:onodes[i],maxSize:maxsize,name:"extrashard"+i});
 
 db.runCommand({enablesharding:"test_database"});
