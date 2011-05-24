@@ -20,9 +20,7 @@ db.runCommand({addshard:"10.181.236.72:27017",maxSize:maxsize,name:"mongo3"});
 var onodes = ['10.181.230.130',
     '10.181.228.196','10.181.229.16','10.181.226.204','10.181.229.195','10.181.228.74','10.181.226.130',
     '10.181.226.118','10.181.230.39','10.181.227.43','10.181.227.122','10.181.227.59',
-    '10.181.230.69','10.181.230.67','10.181.226.124','10.181.224.243','10.181.230.216'
-
-    ];
+    '10.181.230.69','10.181.230.67','10.181.226.124','10.181.224.243','10.181.230.216'];
 for (var i=0;i<onodes.length;i++) db.runCommand({addshard:onodes[i],maxSize:maxsize,name:"extrashard"+i});
 
 db.runCommand({enablesharding:"test_database"});
@@ -37,6 +35,17 @@ for (var x=0;x<l.length;x++) for(var y=0;y<l.length;y+=nn)  for (var z=0;z<l.len
 	     }
 print(cnt);
 
+#quickkk shard distribution :D
+var d = db.shards.find({},{_id:1}).toArray();
+var c = db.chunks.find().toArray();
+var shid=0;
+for (chid in c) {
+    if (shid>=d.length) shid=0;
+    print ("assigning shard "+d[shid]._id+" to chunk "+chid);
+    c[chid].shard = d[shid]._id;
+    db.chunks.save(c[chid]);
+    shid++;
+	}
 	 #clean launch sequence:
 	 rm -rf /var/lib/mongocfg /var/lib/mongodb ; mkdir /var/lib/mongocfg /var/lib/mongodb ; cd mongodb-test ; git pull ; screen -S master -c mongodb-test.screen
 
