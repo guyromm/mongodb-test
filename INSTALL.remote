@@ -29,21 +29,38 @@ cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'cd ~/mongodb-test ; git pull'
 #check which screens are running
 cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'ps aux | grep screen | grep -v "grep screen" | wc'
 
-#killall screens
-cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'killall5 screen'
-
-#init slave mongo sessions
-cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'screen -S slave -d -m -c ~/mongodb-test/mongodb-test.slave.screen'
-
-#init master mongo sessions
-cat masters.txt  | xargs -P0 -n1 -I{} ssh {} 'screen -S master -d -m -c ~/mongodb-test/mongodb-test.master.screen'
-
 #killall mongod and mongos
 cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'killall5 -9 mongod mongos'
-
-#see if mongo is running
-cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'ps aux | grep "mongod -f" | grep -v "grep mongod" | wc'
 
 #recreate confs
 cat machines.txt |\
      xargs -P0 -n1 -I{} ssh {} 'rm -rf /var/lib/mongocfg /var/lib/mongodb ; mkdir /var/lib/mongocfg /var/lib/mongodb'
+
+#killall screens
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'killall5 screen'
+
+#remove dead screens
+cat machines.txt  | xargs -P0 -n1 -I{} ssh {} 'screen -wipe'
+ 
+#have a look at loads
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'uptime'
+
+#init slave mongo sessions
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'screen -S slave -d -m -c ~/mongodb-test/mongodb-test.slave.screen'
+
+
+#init master mongo sessions
+cat masters.txt  | xargs -P0 -n1 -I{} ssh {} 'screen -S master -d -m -c ~/mongodb-test/mongodb-test.master.screen'
+
+
+#see if mongo is running
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'ps aux | grep "mongod -f" | grep -v "grep mongod" | wc'
+#if screen is running
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'ps aux | grep "screen" | grep -v "grep screen" | wc'
+
+#remove a db in all mongos
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} "echo 'db.dropDatabase()' | mongo localhost:27017/test_database"
+
+
+#amount of records in mongod test collections
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'echo "db.sharded_10nodes.count()" | mongo --quiet localhost:27017/test_database'
