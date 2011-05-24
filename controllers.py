@@ -4,27 +4,10 @@
 # Here is the code for communicate with MongoDB
 from noodles.http import Response, ajax_response
 from noodles.templates import render_to
-from pymongo import Connection
 import pymongo, time, random, string, gevent
 from pymongo import ASCENDING, DESCENDING
 import subprocess, json
 
-connection = None
-
-def get_collection(colname):
-    global connection
-    if not connection:
-        #raise Exception('%s , %s'%(colname,'single' in colname))
-        if 'single' not in colname: #hackity hack :P
-            connection = Connection(host='localhost',port=10000)
-        else:
-            connection = Connection()
-    else:
-        pass
-    db = connection.test_database
-    collection = getattr(db,colname) 
-    #collection.ensure_index('indexed_id', unique = True)
-    return collection
     
 def random_str(N):
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(N))

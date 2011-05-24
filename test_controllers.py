@@ -3,7 +3,6 @@
     Our main test logic is here. We implement here inserting of chunk of testing data
     and get indexed item function.
 """
-from controllers import get_collection
 from noodles.http import Response, ajax_response
 import time, hashlib,random,os
 import logging,json,re,webob
@@ -11,6 +10,24 @@ from commands import getstatusoutput as gso
 log = logging.getLogger(__name__)
 letters = 'abcdefghijklmopqrstuvwxyz'
 testfields={}
+from pymongo import Connection
+
+connection = None
+
+def get_collection(colname):
+    global connection
+    if not connection:
+        #raise Exception('%s , %s'%(colname,'single' in colname))
+        if 'single' not in colname: #hackity hack :P
+            connection = Connection(host='localhost',port=10000)
+        else:
+            connection = Connection()
+    else:
+        pass
+    db = connection.test_database
+    collection = getattr(db,colname) 
+    #collection.ensure_index('indexed_id', unique = True)
+    return collection
 
 def get_test_item(uid):
     global letters,testfields
@@ -125,6 +142,7 @@ def insert_1m_worker(request,amt,count):
     start = time.time()
     log.info('getting collection')
     test_collection = get_collection(colname)
+    global connection
     inserts=[]
     curitems = test_collection.count()
 
@@ -199,8 +217,28 @@ def insert_1m_worker(request,amt,count):
             st,op = gso('du -s -m /var/lib/mongodb | cut -f1')
             print 'du returned %s,%s'%(op,st)
             assert st==0 ; datasize = int(op)
-            ins = {'time':datasize,'curitems':curitems,'action':'data_size'}
-            insappend(ins)
+        elif 'sharded' in colname:
+            st,op = gso('mongo --eval "db.%s.dataSize()" --quiet localhost:10000/test_database'%colname)
+            assert st==0
+            datasize = int(op)
+            st,op = gso('mongo --eval "db.printShardingStatus()" --quiet localhost:10000/test_database')
+            assert st==0 ;
+            cres = re.finditer('^([ \t]+)([\w]+)([ \t]+)([\d]+)',op,re.M)
+            tchunks=0 ; shardsamt=0 ; achunks=[]
+            for r in cres:
+                #print r.groups()
+                shardname = r.group(2)
+                chunks = int(r.group(4))
+                tchunks+=chunks
+                shardsamt+=1
+                achunks.append(chunks)
+            ins = {'time':tchunks,'curitems':curitems,'action':'chunks_amt'} ; insappend(ins)
+            avgdev = sum([abs(chnk-(tchunks/shardsamt)) for chnk in achunks])
+            ins = {'time':avgdev,'curitems':curitems,'action':'chunks_deviation'} ; insappend(ins)
+            ins = {'time':shardsamt,'curitems':curitems,'action':'shards_amt'} ; insappend(ins)
+        ins = {'time':datasize,'curitems':curitems,'action':'data_size'}
+        insappend(ins)
+
         if sleep:
             log.info('sleeping (for sharding pacification purposes) - %s'%sleep)
             time.sleep(sleep)
