@@ -9,7 +9,8 @@
 #mongos coordinator listens on 10000
 mongos --port 10000 --configdb 10.181.239.133:9999
 
-mongo 10.181.239.133:10000/admin
+#the following is done at mongos: mongo 10.181.239.133:10000/admin
+
 var maxsize=1500;
 
 
@@ -18,7 +19,6 @@ var onodes = ['10.182.0.78','10.182.12.252','10.182.12.251','10.182.0.85','10.18
     '10.182.12.253','10.182.13.6','10.182.12.245','10.182.12.248','10.182.13.2','10.182.12.247',
     '10.182.12.244','10.182.0.89','10.182.13.1','10.182.12.243','10.182.12.254','10.182.12.255',
     '10.182.13.0','10.182.12.249'];
-
 for (var i=0;i<onodes.length;i++) db.runCommand({addshard:onodes[i],maxSize:maxsize,name:"extrashard"+i});
 
 db.runCommand({enablesharding:"test_database"});
@@ -33,6 +33,14 @@ for (var x=0;x<l.length;x++) for(var y=0;y<l.length;y+=nn)  for (var z=0;z<l.len
 	     }
 print(cnt);
 
+#quickkk shard distribution :D
+use config;
+var d = db.shards.find({},{_id:1}).toArray();
+var c = db.chunks.find().toArray();
+var shid=0;
+for (chid in c) {    if (shid>=d.length) shid=0;    print ("assigning shard "+d[shid]._id+" to chunk "+chid);    c[chid].shard = d[shid]._id;
+    db.chunks.save(c[chid]);    shid++;	}
+use admin;
 	 #clean launch sequence:
 	 rm -rf /var/lib/mongocfg /var/lib/mongodb ; mkdir /var/lib/mongocfg /var/lib/mongodb ; cd mongodb-test ; git pull ; screen -S master -c mongodb-test.screen
 

@@ -6,7 +6,7 @@ screen -t mongocfg 5 mongodb/bin/mongod --configsvr -f /root/mongodb-test/mongod
 sleep 2
 
 #shells & clients
-screen -t emacs 0 emacs mongodb-test.screen INSTALL
+screen -t emacs 0 emacs mongodb-test.master.screen INSTALL SETUP
 screen -t shell 1 bash
 screen -t mongo1 2  mongodb/bin/mongo 10.181.238.238:27017/test_database
 screen -t mongo2 3  mongodb/bin/mongo 10.181.239.133:27017/test_database
