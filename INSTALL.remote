@@ -62,7 +62,7 @@ cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'pkill screen'
 cat machines.txt  | xargs -P0 -n1 -I{} ssh {} 'screen -wipe'
  
 #have a look at loads
-cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'uptime'
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'annotate-output +{} uptime' | egrep -v '(Started|Finished)'
 
 #init slave mongo sessions
 cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'screen -S slave -d -m -c ~/mongodb-test/mongodb-test.slave.screen'
@@ -82,7 +82,11 @@ cat machines.txt | \
 
 
 #if screen is running
-cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'ps aux | grep "screen" | grep -v "grep screen" | wc'
+cat machines.txt | \
+    xargs -P0 -n1 -I{} ssh {} 'ps aux | \
+    grep "screen" | \
+    grep -v "grep screen" | annotate-output +{} wc -l | \
+    egrep -v "(Started|Finished)"'
 
 #build more servers
 cloudservers --user guyromm --apikey <apikey> boot   --image 69  --key ~/.ssh/authorized_keys2 <machine>
