@@ -21,6 +21,18 @@ var onodes = ['10.182.0.78','10.182.12.252','10.182.12.251','10.182.0.85','10.18
     '10.182.13.0','10.182.12.249'];
 for (var i=0;i<onodes.length;i++) db.runCommand({addshard:onodes[i],maxSize:maxsize,name:"extrashard"+i});
 
+var knodes = {'mongo26':'10.182.2.232',
+    'mongo28':'10.182.2.234',
+    'mongo25':'10.182.2.230',
+    'mongo29':'10.182.2.235',
+    'mongo24':'10.182.2.21',
+    'mongo27':'10.182.2.233',
+    'mongo21':'10.182.2.17',
+    'mongo30':'10.182.2.236',
+    'mongo22':'10.182.2.19',
+    'mongo23':'10.182.2.20'}
+for (var nn in knodes)  db.runCommand({addshard:knodes[nn],maxSize:maxsize,name:nn});
+
 db.runCommand({enablesharding:"test_database"});
 var colname = 'sharded_20nodes';
 db.runCommand({shardcollection:"test_database."+colname,key:{indexed_id:1}});
