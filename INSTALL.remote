@@ -106,3 +106,30 @@ cat machines.txt | \
 #sequential with machine names
 for ITEM in `cat machines.txt` ; \
     do echo $ITEM ; ssh $ITEM 'mongo --eval "db.sharded_20nodes.count()" --quiet localhost:27017/test_database' ; done
+
+#query a specific int_id
+cat machines.txt | \
+    xargs -P0 -n1 -I{} \
+    ssh {} 'annotate-output +{} mongo --eval "db.sharded_20nodes.find({indexed_id:hex_md5(\"27115708\")})" --quiet \
+    localhost:27017/test_database'\
+    | egrep -v '(Finished|Started)'
+
+cat machines.txt | \
+    xargs -P0 -n1 -I{} \
+    ssh {} 'annotate-output +{} mongo \
+     --eval "db.sharded_20nodes.find({indexed_id:\"825b23f0804f5807ee3fdd584b43a8e6\"})" --quiet \
+    localhost:27017/test_database'\
+    | egrep -v '(Finished|Started)'
+
+
+for ITEM in `cat machines.txt`; do \
+    echo $ITEM ; 
+    ssh $ITEM mongo --eval 'db.sharded_20nodes.find\({indexed_id:"825b23f0804f5807ee3fdd584b43a8e6"}\)' --quiet \
+    localhost:27017/test_database ; 
+    done
+
+
+echo 'mongo1' | \
+     xargs -P0 -n1 -I{} \
+     ssh {} 'annotate-output +{} \
+     echo "db.sharded_20nodes.find({indexed_id:hex_md5(\"27115708\")});" | mongo localhost:10000/test_database --quiet'
