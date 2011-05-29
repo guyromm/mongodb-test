@@ -36,7 +36,8 @@ cat newmachines.txt | xargs -P0 -n1 -I{} ssh {} "apt-get update ; apt-get instal
 
 #fetch secondary interfaces
 cat newmachines.txt | \
-    xargs -P0 -n1 -I{} ssh {} "annotate-output +{} ifconfig eth1 | grep 'inet addr' | cut -d: -f2 | cut -f1 -d' '"
+    xargs -P0 -n1 -I{} ssh {} "annotate-output +{} ifconfig eth1 | grep 'inet addr'" | awk '{print "\""$1":"$4"\","}' | sed s/:addr:/\":\"/
+
 
 
 
@@ -49,14 +50,14 @@ cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'cd ~/mongodb-test ; git pull'
 cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'ps aux | grep screen | grep -v "grep screen" | wc'
 
 #killall mongod and mongos
-cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'pkill mongod mongos'
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'pkill -f mongod ; pkill -f mongos'
 
 #recreate confs
 cat machines.txt |\
      xargs -P0 -n1 -I{} ssh {} 'rm -rf /var/lib/mongocfg /var/lib/mongodb ; mkdir /var/lib/mongocfg /var/lib/mongodb'
 
 #killall screens
-cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'pkill screen'
+cat machines.txt | xargs -P0 -n1 -I{} ssh {} 'pkill -f screen'
 
 #remove dead screens
 cat machines.txt  | xargs -P0 -n1 -I{} ssh {} 'screen -wipe'
@@ -96,12 +97,25 @@ cat machines.txt | xargs -P0 -n1 -I{} ssh {} "echo 'db.dropDatabase()' | mongo l
 
 #amount of records in mongod test collections
 cat machines.txt | \
+        xargs -P0 -n1 -I{}     ssh {} 'annotate-output +{} mongo --eval "db.sharded_30nodes.count()" --quiet \
+	     localhost:27017/test_database' | egrep -v '(Finished|Started)' | awk '{print $3" "$1}' |sort -n
+
+#databases present
+cat machines.txt | \
     xargs -P0 -n1 -I{} \
-    ssh {} 'annotate-output +{} mongo --eval "db.sharded_20nodes.count()" --quiet \
-     localhost:27017/test_database' | egrep -v '(Finished|Started)'
+    ssh {} 'echo "show dbs" | mongo --quiet \
+     localhost:27017/admin'
+
+#drop test_database
+cat machines.txt | \
+    xargs -P0 -n1 -I{} \
+    ssh {} 'echo "db.dropDatabase()" | mongo --quiet \
+     localhost:27017/test_database'
 
 cat machines.txt | \
     xargs -P0 -n1 -I{} ssh {} 'mongo --eval "db.sharded_20nodes.count()" --quiet localhost:27017/test_database'
+
+
 
 #sequential with machine names
 for ITEM in `cat machines.txt` ; \
