@@ -9,8 +9,15 @@
 #mongos coordinator listens on 10000
 mongos --port 10000 --configdb 10.181.239.133:9999
 
-#the following is done at mongos: mongo 10.181.239.133:10000/admin
 
+
+//turn off balancer
+use config
+db.settings.update({_id:"balancer"},{$set : {stopped:true}}, true) ;
+
+use admin
+
+#the following is done at mongos: mongo 10.181.239.133:10000/admin
 var maxsize=1500;
 //the rest of them:
 var knodes = {"mongo29":"10.182.2.235",

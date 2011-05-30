@@ -113,13 +113,13 @@ cat machines.txt | \
      localhost:27017/test_database'
 
 cat machines.txt | \
-    xargs -P0 -n1 -I{} ssh {} 'mongo --eval "db.sharded_20nodes.count()" --quiet localhost:27017/test_database'
+    xargs -P0 -n1 -I{} ssh {} 'mongo --eval "db.sharded_30nodes.count()" --quiet localhost:27017/test_database'
 
 
 
 #sequential with machine names
 for ITEM in `cat machines.txt` ; \
-    do echo $ITEM ; ssh $ITEM 'mongo --eval "db.sharded_20nodes.count()" --quiet localhost:27017/test_database' ; done
+    do echo $ITEM ; ssh $ITEM 'mongo --eval "db.sharded_30nodes.count()" --quiet localhost:27017/test_database' ; done
 
 #query a specific int_id
 cat machines.txt | \
