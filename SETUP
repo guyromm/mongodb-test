@@ -12,25 +12,46 @@ mongos --port 10000 --configdb 10.181.239.133:9999
 #the following is done at mongos: mongo 10.181.239.133:10000/admin
 
 var maxsize=1500;
+//the rest of them:
+var knodes = {"mongo29":"10.182.2.235",
+"mongo26":"10.182.2.232",
+"mongo19":"10.182.13.1",
+"mongo20":"10.182.13.2",
+"mongo27":"10.182.2.233",
+"mongo22":"10.182.2.19",
+"mongo12":"10.182.0.75",
+"mongo23":"10.182.2.20",
+"mongo10":"10.182.12.249",
+"mongo28":"10.182.2.234",
+"mongo24":"10.182.2.21",
+"mongo30":"10.182.2.236",
+"mongo7":"10.182.12.245",
+"mongo5":"10.182.12.243",
+"mongo6":"10.182.12.244",
+"mongo25":"10.182.2.230",
+"mongo15":"10.182.12.253",
+"mongo4":"10.182.12.241",
+"mongo21":"10.182.2.17",
+"mongo1":"10.182.13.6",
+"mongo14":"10.182.12.252",
+"mongo16":"10.182.12.254",
+"mongo2":"10.182.0.78",
+"mongo11":"10.182.12.251",
+"mongo3":"10.182.0.89",
+"mongo9":"10.182.12.248",
+"mongo13":"10.182.0.85",
+"mongo17":"10.182.12.255",
+"mongo18":"10.182.13.0"};
 
-
-#the rest of them:
-var onodes = ['10.182.0.78','10.182.12.252','10.182.12.251','10.182.0.85','10.182.0.75','10.182.12.241',
-    '10.182.12.253','10.182.13.6','10.182.12.245','10.182.12.248','10.182.13.2','10.182.12.247',
-    '10.182.12.244','10.182.0.89','10.182.13.1','10.182.12.243','10.182.12.254','10.182.12.255',
-    '10.182.13.0','10.182.12.249'];
-for (var i=0;i<onodes.length;i++) db.runCommand({addshard:onodes[i],maxSize:maxsize,name:"extrashard"+i});
+for (var nn in knodes)  db.runCommand({addshard:knodes[nn],maxSize:maxsize,name:nn});
 
 db.runCommand({enablesharding:"test_database"});
-var colname = 'sharded_20nodes';
+var colname = 'sharded_30nodes';
 db.runCommand({shardcollection:"test_database."+colname,key:{indexed_id:1}});
 
 var l = '0123456790abcdef';var nn = 1; var cnt=0;
-for (var x=0;x<l.length;x++) for(var y=0;y<l.length;y+=nn)  for (var z=0;z<l.length;z+=nn*3){print(l[x]+l[y]+l[z]); cnt++; }
-    {
+for (var x=0;x<l.length;x++) for(var y=0;y<l.length;y+=nn)  for (var z=0;z<l.length;z+=nn*3) db.runCommand({split:"test_database."+colname,middle:{indexed_id:l[x]+l[y]+l[z] } });
 
-             db.runCommand({split:"test_database."+colname,middle:{indexed_id:l[x]+l[y]+l[z] } });
-	     }
 print(cnt);
 
 #quickkk shard distribution :D
@@ -56,5 +77,6 @@ use admin;
 	 #run 30m on a 10 node sharded cluster
 	 python test_controllers.py '/insert/100k/300?noindex=1&sleep=0&collection=sharded_20nodes&initialindex=1'
 
-	 #run 30m on a 20 node sharded cluster
-	 python test_controllers.py '/insert/100k/300?noindex=1&sleep=0&collection=sharded_20nodes&initialindex=1'
+	 #run 50m on a 30 node sharded cluster
+	 python test_controllers.py '/insert/100k/500?noindex=1&sleep=0&collection=sharded_30nodes&initialindex=1'
+
