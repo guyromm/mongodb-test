@@ -58,7 +58,38 @@ def get_test_item(uid):
         rt['field_%s'%((i+1)*4)]=nstr
     return rt
 
+def check_integrity(request,colname):
+    fr = int(request.params.get('fr',0))
+    to = int(request.params.get('to',0))
+    iterate = int(request.params.get('iterate',1))
+    log.info('hi %s'%colname)
+    test_collection = get_collection(colname)
+    global connection
+    
+    curitems = int(request.params.get('startfrom',test_collection.count()))
+    log.info('%s items set'%curitems)
+    if to: 
+        if curitems<=to:
+            maxitem=curitems
+        else:
+            maxitem = to
+    else: maxitem = curitems
+    if fr: i=fr
+    else:  i=1
 
+    errors=[] ; errmd5={}
+    log.info('running %s - %s'%(i,maxitem)) ; sf =i
+    while i<maxitem:
+        iw = get_item_worker(i,colname)
+        #raise Exception(iw)
+        if iw['success']!=True or iw['marker']['int_id']!=i:
+            #log.error("could not find %s or whatever %s"%(i,iw))
+            errors.append(i)
+        i+=iterate
+        if i % 100000 ==0: log.info(i)
+    if len(errors):
+        log.error('did not find %s items in range %s - %s lowest being %s, highest %s (iterate=%s)'%(len(errors),sf,maxitem,min(errors),max(errors),iterate))
+    return errors
 # @ajax_response
 # def insert_100k(request, count):
 #     "Insert 100k records from dumps"
@@ -88,7 +119,7 @@ def get_test_item(uid):
 #     delta = time.time() - start
 #     return {'success': True, 'time': delta, 'count': test_collection.count()}
 
-import pymongo,sys
+import pymongo,sys,datetime
 from noodles.http import Request
 
 def get_item_worker(uid,colname):
@@ -144,10 +175,10 @@ def insert_1m_worker(request,amt,count):
     test_collection = get_collection(colname)
     global connection
     inserts=[]
-    curitems = test_collection.count()
-
+    curitems = int(request.params.get('startfrom',test_collection.count()))
     
     def insappend(ins):
+        ins['stamp'] = datetime.datetime.now().strftime('%s')
         fname = 'static/%s.data.js'%colname
         log.info(ins)
         inserts.append(ins)
@@ -203,7 +234,10 @@ def insert_1m_worker(request,amt,count):
             docs = []
             for e in range(records_per_iter):
                 curitems+=1
+
                 ti = get_test_item(curitems)
+                if bool(request.params.get('verbose',False)): 
+                    log.info(ti)
                 docs.append(ti)
             test_collection.insert(docs)
             if i % 1000==0:
@@ -275,15 +309,27 @@ def insert_1m(request,amt, count):
 
 if __name__ == '__main__':
     env = webob.multidict.MultiDict()
-    url = sys.argv[1]
-    amt,count,bs,wi = re.compile('^\/insert\/([^\/]+)\/([^?]+)(|\?(.*))$').search(url).groups()
-    pf = webob.multidict.MultiDict()
-    pf['noindex'] = bool(re.compile('noindex').search(url))
-    pf['noselect'] = bool(re.compile('noindex').search(url))
-    env['QUERY_STRING'] = wi #wsgi.input']=wi #pf
     env['REQUEST_METHOD']='GET'
-    req = Request(env)
+    url = sys.argv[1]
     log.addHandler(logging.StreamHandler(sys.stdout))
     log.setLevel(logging.INFO) ; 
-    log.info('about to run'); 
-    print insert_1m_worker(req,amt,count)
+
+    insres = re.compile('^\/insert\/([^\/]+)\/([^?]+)(|\?(.*))$').search(url)
+    checkres = re.compile('^\/check\/([^\/\?\&]+)(|\?(.*))$').search(url)
+    if insres:
+        amt,count,bs,wi = insres.groups()
+        pf = webob.multidict.MultiDict()
+        pf['noindex'] = bool(re.compile('noindex').search(url))
+        pf['noselect'] = bool(re.compile('noindex').search(url))
+        env['QUERY_STRING'] = wi #wsgi.input']=wi #pf
+
+        req = Request(env)
+        log.info('about to run'); 
+        print insert_1m_worker(req,amt,count)
+    elif checkres:
+        log.info('about to run')
+
+        env['QUERY_STRING'] = checkres.group(3)
+        req = Request(env)
+        check_integrity(req,checkres.group(1))
+

@@ -23,7 +23,7 @@ def get_map():
     map.connect(None, '/create/index', controller="controllers", action="create_index")
     map.connect(None, '/drop/index', controller="controllers", action="drop_index")
     map.connect(None, '/insert/{amt:.+}/{count:\d+}', controller="test_controllers", action="insert_1m")
-    
+    map.connect(None, '/check/{colname}',controller="test_controllers",action="check_integrity")
     #map.connect(None, '/insert/100k/{count:\d+}', controller="test_controllers", action="insert_100k")
 
     map.connect(None, '/get/item/{uid:\d+}', controller="test_controllers", action="get_item")

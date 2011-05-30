@@ -9,7 +9,7 @@
  *   > db.getObjectCounts( "my_collection" )
  *   
 */
-DB.prototype.getObjectCounts = function( collectionName ) {
+DB.prototype.getObjectCounts = function( collectionName ,onlyShard) {
     if ( collectionName == undefined ){
         print( "need to specify collection name" );
         return;
@@ -25,7 +25,14 @@ DB.prototype.getObjectCounts = function( collectionName ) {
     // get chunk bounds and sharding key pattern, both in the config db
     var cfg = this.getSisterDB( "config" );
     var shardKeys = cfg.collections.findOne( { "_id": ns } , { key: 1 , _id: 0 } )["key"];
-    var chunks = cfg.chunks.find( { "ns": ns } , { _id: 0 , min: 1 , max: 1 , shard:1 } ).sort({ min:1 }).toArray();
+    if (onlyShard)
+	{
+	    print("looking only at shard "+onlyShard);
+	    var chunks = cfg.chunks.find( { "ns": ns,"shard":onlyShard } , { _id: 0 , min: 1 , max: 1 , shard:1 } ).sort({ min:1 }).toArray();
+	}
+    else
+	var chunks = cfg.chunks.find( { "ns": ns } , { _id: 0 , min: 1 , max: 1 , shard:1 } ).sort({ min:1 }).toArray();
+
 
     // get the object count for each chunk
     chunks.forEach(

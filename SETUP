@@ -55,3 +55,6 @@ use admin;
 
 	 #run 30m on a 10 node sharded cluster
 	 python test_controllers.py '/insert/100k/300?noindex=1&sleep=0&collection=sharded_20nodes&initialindex=1'
+
+	 #run 30m on a 20 node sharded cluster
+	 python test_controllers.py '/insert/100k/300?noindex=1&sleep=0&collection=sharded_20nodes&initialindex=1'
