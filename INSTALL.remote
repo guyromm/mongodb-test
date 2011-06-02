@@ -1,7 +1,15 @@
 #fresh install
 
+#delete all cloudservers
+for ID in `cloudservers --username <> --apikey <> list | awk '{print $2}' | egrep '([0-9]+)'` ; \
+    do echo $ID ; cloudservers --username <> --apikey <> delete $ID ; done
+
+#build more servers
+for ((I=1;I<31;I=$I+1)); do echo $I; cloudservers --user guyromm --apikey <apikey> boot   --image 69  --key ~/.ssh/authorized_keys2 mongo$I ; done
+
 #install known hosts (for github) on all machines
 for ITEM in `cat newmachines.txt` ; do echo $ITEM ; scp known_hosts $ITEM:~/.ssh/ ; done
+cat newmachines.txt | xargs -P0 -n1 -I{} scp known_hosts {}:~/.ssh/
 
 #xargs usage:
 cat newmachines.txt | xargs -P0 -n1 -I{} ssh {} uname -a
@@ -89,9 +97,9 @@ cat machines.txt | \
     grep -v "grep screen" | annotate-output +{} wc -l | \
     egrep -v "(Started|Finished)"'
 
-#build more servers
-cloudservers --user guyromm --apikey <apikey> boot   --image 69  --key ~/.ssh/authorized_keys2 <machine>
 
+#remove servers
+cloudservers 
 #remove a db in all mongos
 cat machines.txt | xargs -P0 -n1 -I{} ssh {} "echo 'db.dropDatabase()' | mongo localhost:27017/test_database"
 
