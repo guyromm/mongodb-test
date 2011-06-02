@@ -9,7 +9,7 @@ for ((I=1;I<31;I=$I+1)); do echo $I; cloudservers --user guyromm --apikey <apike
 
 #install known hosts (for github) on all machines
 for ITEM in `cat newmachines.txt` ; do echo $ITEM ; scp known_hosts $ITEM:~/.ssh/ ; done
-cat newmachines.txt | xargs -P0 -n1 -I{} scp known_hosts {}:~/.ssh/
+cat newmachines.txt | xargs -P0 -n1 -I{} scp -o StrictHostKeyChecking=no known_hosts {}:~/.ssh/
 
 #xargs usage:
 cat newmachines.txt | xargs -P0 -n1 -I{} ssh {} uname -a
