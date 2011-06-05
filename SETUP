@@ -87,3 +87,7 @@ use admin;
 	 #run 50m on a 30 node sharded cluster
 	 python test_controllers.py '/insert/100k/500?noindex=1&sleep=0&collection=sharded_30nodes&initialindex=1'
 
+
+	 #run 50m on a 30 node sharded cluster, with balancer off
+	 python test_controllers.py '/insert/100k/500?noindex=1&sleep=0&collection=sharded_30nodes_nobalancer&initialindex=1'
+
