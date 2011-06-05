@@ -1,14 +1,15 @@
 #!/usr/bin/python
 
 from commands import getstatusoutput as gso
-import json
+import json,time
 
-colname = 'sharded_30nodes'
+colname = 'sharded_30nodes_nobalancer'
 mongos = open('masters.txt').read().strip().split('\n')[0]
-
+simulate=False
+runonce=True
 
 while True:
-    countcmd = """cat machines.txt | xargs -P0 -n1 -I{}     ssh {} 'annotate-output +{} mongo --eval "db.%s.count()" --quiet localhost:27017/test_database' | egrep -v '(Finished|Started)' | awk '{print $3" "$1}' |sort -n"""%(colname)
+    countcmd = """cat slaves.txt | xargs -P0 -n1 -I{}     ssh {} 'annotate-output +{} mongo --eval "db.%s.count()" --quiet localhost:27017/test_database' | egrep -v '(Finished|Started)' | awk '{print $3" "$1}' |sort -n"""%(colname)
 
     st,op = gso(countcmd)
     assert st==0
@@ -30,5 +31,11 @@ while True:
     movcmd = """db.runCommand({moveChunk:'\"'test_database.%s'\"',find:{indexed_id:'\"'%s'\"'},to:'\"'%s'\"'})"""%(colname,chunks[0]['min']['indexed_id'],targetshard)
     movcmdf = """ssh %s 'echo "%s" | mongo localhost:10000/admin'"""%(mongos,movcmd)
     print movcmdf
-    #print op
-    st,op = gso(movcmdf) ; assert st==0
+    if simulate:
+        print 'simulate. sleeping'
+        time.sleep(1)
+    else:
+        #print op
+        st,op = gso(movcmdf) ; assert st==0
+    if runonce:
+        break

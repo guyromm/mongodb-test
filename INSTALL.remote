@@ -104,8 +104,8 @@ cloudservers
 cat machines.txt | xargs -P0 -n1 -I{} ssh {} "echo 'db.dropDatabase()' | mongo localhost:27017/test_database"
 
 #amount of records in mongod test collections
-cat machines.txt | \
-        xargs -P0 -n1 -I{}     ssh {} 'annotate-output +{} mongo --eval "db.sharded_30nodes.count()" --quiet \
+cat slaves.txt | \
+        xargs -P0 -n1 -I{}     ssh {} 'annotate-output +{} mongo --eval "db.sharded_30nodes_nobalancer.count()" --quiet \
 	     localhost:27017/test_database' | egrep -v '(Finished|Started)' | awk '{print $3" "$1}' |sort -n
 
 #databases present
